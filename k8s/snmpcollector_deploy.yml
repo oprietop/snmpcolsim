@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: snmpcollector
+  labels:
+    app: snmpcollector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: snmpcollector
+  template:
+    metadata:
+      labels:
+        app: snmpcollector
+    spec:
+      securityContext:
+        runAsUser: 472
+        runAsGroup: 472
+        fsGroup: 472
+      volumes:
+      - name: task-pv-storage
+        persistentVolumeClaim:
+          claimName: task-pv-claim
+      containers:
+      - image: tonimoreno/snmpcollector:latest
+        name: snmpcollector
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 200m
+            memory: 512Mi
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8090
+        volumeMounts:
+        - mountPath: /var/lib/snmpcollector
+          name: task-pv-storage

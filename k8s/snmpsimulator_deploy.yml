@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: snmpsimulator
+  labels:
+    app: snmpsimulator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: snmpsimulator
+  template:
+    metadata:
+      labels:
+        app: snmpsimulator
+    spec:
+      securityContext:
+        runAsUser: 472
+        runAsGroup: 472
+        fsGroup: 472
+      volumes:
+      - name: log-volume
+        emptyDir: {}
+      containers:
+      - image: tandrup/snmpsim:latest
+        imagePullPolicy: Always
+        name: snmpsimulator
+        command: [ "snmpsimd.py", "--agent-udpv4-endpoint=0.0.0.0:1161", "--process-user=snmpsim", "--process-group=nogroup" ]
+        volumeMounts:
+        - mountPath: /usr/local/log
+          name: log-volume
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 200m
+            memory: 512Mi
